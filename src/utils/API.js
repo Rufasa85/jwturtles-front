@@ -1,7 +1,7 @@
 const API = {
     login:function(userData){
         console.log(userData)
-        return fetch("http://localhost:8080/login",{
+        return fetch("https://jwturtles-api.herokuapp.com/login",{
             method:"POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -10,7 +10,7 @@ const API = {
         }).then(res=> res.json()).catch(err=>null)
     },
     getUserFromToken:function(token){
-        return fetch("http://localhost:8080/userFromToken",{
+        return fetch("https://jwturtles-api.herokuapp.com/userFromToken",{
             method:"POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -20,7 +20,7 @@ const API = {
     },
     getTurtles: function(token,userId){
         console.log('fetching turtles')
-        return fetch(`http://localhost:8080/users/${userId}/turtles`,{
+        return fetch(`https://jwturtles-api.herokuapp.com/users/${userId}/turtles`,{
             headers:{
                 "authorization": `Bearer ${token}`
             }
