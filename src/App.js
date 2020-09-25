@@ -1,24 +1,76 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React,{useState,useEffect} from 'react';
+import Login from './components/login';
+import API from "./utils/API"
+import "./App.css";
+import Turtles from './components/Turtles';
+
 
 function App() {
+  const [loginValues, setloginValues] = useState({
+    userName:"",
+    password:""
+  })
+  const [loggedInUser, setLoggedInUser] = useState({
+    isLoggedIn:false,
+    id:null,
+    token:null,
+    userName:"",
+    userTurtles:[]
+  })
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if(token){
+
+      API.getUserFromToken(token).then(result=>{
+        API.getTurtles(token,result.id).then(data=>{
+          setLoggedInUser({...loggedInUser,token:token,id:result.id,userName:result.userName,isLoggedIn:true,userTurtles:data})
+        })
+      }).catch(err=>{
+        localStorage.removeItem("token");
+      })
+    }
+  }, [])
+
+  
+  const submit = e=>{
+    e.preventDefault();
+    console.log("submitted")
+    API.login(loginValues).then(result=>{
+      if(result){
+        localStorage.setItem("token",result.token);
+        API.getTurtles(result.token,result.id).then(data=>{
+          setLoggedInUser({...loggedInUser,...result,isLoggedIn:true,userTurtles:data})
+        })
+      }else{
+        localStorage.removeItem("token");
+        setLoggedInUser({
+          isLoggedIn:false,
+          userId:null,
+          token:null,
+          userName:"",
+          userTurtles:[]
+        })
+      }
+    })
+    
+  }
+
+  const change = ({target})=>{
+    const {name,value} = target
+    setloginValues({
+      ...loginValues,
+      [name]:value
+
+    })
+    
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <Login submitHandle={submit} handleChange={change} values={loginValues}/>
+      <h1>Turtles</h1>
+    {loggedInUser.isLoggedIn?<h1>Welcome {loggedInUser.userName}</h1>:<h1>log in to see your turtles</h1>}
+    {loggedInUser.userTurtles?<Turtles turtles={loggedInUser.userTurtles}/>:null}
     </div>
   );
 }
